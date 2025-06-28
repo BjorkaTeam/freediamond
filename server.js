@@ -1,31 +1,19 @@
 const express = require('express');
-const multer = require('multer');
-const path = require('path');
+const bodyParser = require('body-parser');
+const fs = require('fs');
+
 const app = express();
-const port = process.env.PORT || 3000;
-
-// storage config
-const storage = multer.diskStorage({
-  destination: './uploads/',
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname);
-  }
-});
-const upload = multer({ storage: storage });
-
+app.use(bodyParser.json({ limit: '10mb' }));
 app.use(express.static('public'));
 
-// upload endpoint
-app.post('/upload', upload.single('photo'), (req, res) => {
-  if (!req.file) return res.send('Upload gagal!');
-  res.send(`Upload sukses! Disimpan sebagai: ${req.file.filename}`);
+app.post('/upload', (req, res) => {
+  const imgData = req.body.image.replace(/^data:image\/png;base64,/, "");
+  const fileName = `uploads/${Date.now()}.png`;
+  fs.writeFileSync(fileName, imgData, 'base64');
+  console.log("Gambar disimpan:", fileName);
+  res.send('OK');
 });
 
-// route utama
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/public/index.html');
-});
-
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+app.listen(3000, () => {
+  console.log('Server aktif di http://localhost:3000');
 });
