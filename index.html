@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Webcam to ASCII Banyak Simbol</title>
+  <style>
+    body { background: black; color: lime; font-family: monospace; }
+    video, canvas { display: block; margin: 10px auto; }
+    pre {
+      white-space: pre;
+      font-size: 6px;
+      line-height: 0.6;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<video id="video" width="320" height="240" autoplay></video>
+<canvas id="canvas" width="80" height="50" style="display:none;"></canvas>
+<button onclick="capture()">Capture ASCII</button>
+<pre id="ascii"></pre>
+
+<script>
+  const video = document.getElementById('video');
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const ascii = document.getElementById('ascii');
+
+  // Set symbol dari gelap ke terang
+  const symbols = "@%#*+=-:. ";
+
+  // Minta izin webcam
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+      video.srcObject = stream;
+    });
+
+  function capture() {
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    let result = '';
+
+    for (let y = 0; y < canvas.height; y++) {
+      for (let x = 0; x < canvas.width; x++) {
+        const index = (y * canvas.width + x) * 4;
+        const r = data[index];
+        const g = data[index + 1];
+        const b = data[index + 2];
+        const brightness = (r + g + b) / 3;
+
+        // Konversi brightness ke index simbol
+        const symbolIndex = Math.floor((brightness / 255) * (symbols.length - 1));
+        result += symbols[symbolIndex];
+      }
+      result += '\n';
+    }
+
+    ascii.textContent = result;
+  }
+</script>
+
+</body>
+</html>
